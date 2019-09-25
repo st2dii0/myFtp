@@ -13,7 +13,7 @@ export function log(string, color='blue', withNewLine=true){
     }
 }
 
-const allowedFtpCmdNotLog = [
+const NologAlloedFtpCmd = [
     'QUIT',
     'HELP',
     'PASS',
@@ -29,9 +29,9 @@ const allowedFtpCmd = [
 ]
 
 export function isallowedFtpCmdLogged(cmd){
-    return allowedFtpCmd.includes(cmd.toUpperCase()) || allowedFtpCmdNotLog.includes(cmd.toUpperCase());
+    return allowedFtpCmd.includes(cmd.toUpperCase()) || NologAlloedFtpCmd.includes(cmd.toUpperCase());
 }
 
 export function isallowedFtpCmd(cmd){
-    return allowedFtpCmdNotLog.includes(cmd.toUpperCase());
+    return NologAlloedFtpCmd.includes(cmd.toUpperCase());
 }

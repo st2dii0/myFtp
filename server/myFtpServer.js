@@ -29,13 +29,18 @@ class FtpServer extends Server {
     constructor() {
         super();
         this.port = port;
-        this.ROOT_FTP_DIRECTORY = '/tmp';
+        this.ROOT_FTP_DIRECTORY = path.join(process.cwd(), 'shared');
     }
 
     start() {
         super.create(this.port, socket => {
             console.log('Socket connected');
             socket.setEncoding('ascii');
+            socket.session = {
+                username: "st2diio",
+                isConnected: true
+            }
+            this.checkDir(socket, "st2diio")
             socket.on('close', () => {
                 console.log('Socket disconnected');
             });
@@ -46,12 +51,12 @@ class FtpServer extends Server {
             socket.on('data', (data) => {
                 data = data.trim();
                 let [cmd, ...args] = data.split(' ');
-                if(!isallowedFtpCmd(cmd)){
+                if(!isallowedFtpCmdLogged(cmd)){
                     console.log(cmd);
-                    socket.write(`This command is not available.`);
+                    socket.write(`This command is not available. Login first for better luck!`);
                     return
                 }
-                if ((!socket.session || !socket.session.isConnected) && !isallowedFtpCmdLogged(cmd)){
+                if ((!socket.session || !socket.session.isConnected) && !isallowedFtpCmd(cmd)){
                     socket.write(`You need to login foo`);
                     return
                 }
@@ -97,27 +102,37 @@ class FtpServer extends Server {
         let root_dir = socket.session.directory.split('/');
         root_dir.pop();
         const user_current_dir = socket.session.pwd;
-        exec(`ls -l ${path.join(root_dir.join('/'), user_current_dir)}`, (err, stdout, stderr)=>{
-            socket.write(stdout);
-        });
-        }
+        // console.log("user_current_dir: ",user_current_dir)
+        // console.log("root_dir: ", root_dir);
+
+        console.log(path.join(root_dir.join('/'), user_current_dir))
+        // exec(`ls -l /shared${user_current_dir}`, (err, stdout, stderr)=>{
+        //     console.log(stdout)
+        //     socket.write(stdout);
+        // });
+        exec(`ls -l ${path.join(root_dir.join('/'), user_current_dir)}`, (e, stdout, stderr) => {
+            socket.write(stdout)
+        })
+    }
 
     checkDir(socket, username) {
         const dir = path.join(this.ROOT_FTP_DIRECTORY, username);
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir)
+            console.log(dir);
+
         }
         socket.session.directory = dir;
         socket.session.pwd = `/${username}`;
     }
 
     pwd(socket) {
-        socket.write()
+        socket.write(socket.session.pwd);
     }
 
     help(socket) {
         const str = `
-        U foo need sum help :
+        Foo u need sum help :
 
         - USER <username>: check if the user exist
         - PASS <password>: authenticate the user with a password
@@ -129,7 +144,6 @@ class FtpServer extends Server {
         - HELP: send helpful information to the client
         - QUIT: close the connection and stop the program
         `
-
         socket.write(str);
     }
 }
