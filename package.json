@@ -1,0 +1,41 @@
+{
+  "name": "ftp",
+  "version": "0.3.10",
+  "author": "st2diio",
+  "description": "An FTP server/client",
+  "main": "./lib/connection",
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "dependencies": {
+    "babelrc": "0.0.4",
+    "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "http": "0.0.0",
+    "net": "^1.0.2",
+    "nodemon": "^1.19.2",
+    "readable-stream": "1.1.x",
+    "readline": "^1.3.0",
+    "xregexp": "2.0.0"
+  },
+  "scripts": {
+    "server": "nodemon server/myFtpServer.js --exec babel-node",
+    "client": "nodemon client/myFtpClient.js --exec babel-node"
+  },
+  "keywords": [
+    "ftp",
+    "server",
+    "client",
+    "transfer"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/st2dii0/myFtp.git"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.6.0",
+    "@babel/core": "^7.6.0",
+    "@babel/node": "^7.6.1",
+    "@babel/preset-env": "^7.6.0"
+  }
+}
