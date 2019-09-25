@@ -36,11 +36,6 @@ class FtpServer extends Server {
         super.create(this.port, socket => {
             console.log('Socket connected');
             socket.setEncoding('ascii');
-            socket.session = {
-                username: "st2diio",
-                isConnected: true
-            }
-            this.checkDir(socket, "st2diio")
             socket.on('close', () => {
                 console.log('Socket disconnected');
             });
@@ -102,14 +97,6 @@ class FtpServer extends Server {
         let root_dir = socket.session.directory.split('/');
         root_dir.pop();
         const user_current_dir = socket.session.pwd;
-        // console.log("user_current_dir: ",user_current_dir)
-        // console.log("root_dir: ", root_dir);
-
-        console.log(path.join(root_dir.join('/'), user_current_dir))
-        // exec(`ls -l /shared${user_current_dir}`, (err, stdout, stderr)=>{
-        //     console.log(stdout)
-        //     socket.write(stdout);
-        // });
         exec(`ls -l ${path.join(root_dir.join('/'), user_current_dir)}`, (e, stdout, stderr) => {
             socket.write(stdout)
         })
@@ -129,6 +116,38 @@ class FtpServer extends Server {
     pwd(socket) {
         socket.write(socket.session.pwd);
     }
+
+    stor(socket, filename){
+
+    }
+
+    cwd(socket, directory){
+        if (directory != '..'){
+            const temp_dir = path.join(socket.session.pwd, directory)
+            let root_dir = socket.session.directory.split('/')
+            root_dir.pop()
+            const temp_dir_root = path.join(root_dir.join('/'), temp_dir)
+
+            if(fs.existsSync(temp_dir_root)){
+                socket.session.pwd = temp_dir
+                socket.write(`Change directory to ${temp_dir}`)
+            } else {
+                socket.write(`This directory doesn't exist, please use MKDIR`)
+            }
+        } else {
+            let temp_dir = socket.session.pwd
+            if (path.join('/', socket.session.username) == temp_dir){
+                socket.write("You're on the top of your directory")
+            } else {
+                temp_dir = temp_dir.split('/')
+                temp_dir.pop()
+                socket.session.pwd = temp_dir.join('/')
+                socket.write(`Change directory to ${socket.session.pwd}`)
+            }
+        }
+    }
+
+    retr(socket, filename){}
 
     help(socket) {
         const str = `
